@@ -3,11 +3,16 @@ import { useAppContext } from "../context/AppContext";
 
 function LoginPage() {
   const [localNickname, setLocalNickname] = useState("");
-  const { setNickname, setPage } = useAppContext();
+  const { setNickname, setPage, setUserId } = useAppContext();
 
   const handleLogin = () => {
     const trimmed = localNickname.trim();
     if (!trimmed) return;
+    const id =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    setUserId(id);
     setNickname(trimmed);
     setPage("lobby");
   };

@@ -7,6 +7,7 @@ const actions = [
   { key: "softDrop", label: "소프트 드롭" },
   { key: "hardDrop", label: "하드 드롭" },
   { key: "rotate", label: "회전" },
+  { key: "hold", label: "홀드" },
 ];
 
 export default function KeySettingsPage() {

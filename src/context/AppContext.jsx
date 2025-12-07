@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { io } from "socket.io-client";
 
 const AppContext = createContext();
 
@@ -8,6 +9,7 @@ const defaultKeyBindings = {
   softDrop: "ArrowDown",
   hardDrop: "Space",
   rotate: "ArrowUp",
+  hold: "Shift",
 };
 
 export function AppProvider({ children }) {
@@ -20,7 +22,11 @@ export function AppProvider({ children }) {
   const [keyBindings, setKeyBindings] = useState(() => {
     try {
       const stored = localStorage.getItem("keyBindings");
-      return stored ? JSON.parse(stored) : defaultKeyBindings;
+      if (!stored) {
+        return defaultKeyBindings;
+      }
+      const parsed = JSON.parse(stored);
+      return { ...defaultKeyBindings, ...parsed };
     } catch {
       return defaultKeyBindings;
     }
@@ -32,6 +38,29 @@ export function AppProvider({ children }) {
     } catch {
     }
   }, [keyBindings]);
+
+  useEffect(() => {
+    if (!nickname || !userId) {
+      return;
+    }
+
+    const url = import.meta.env.VITE_SOCKET_SERVER_URL;
+    if (!url) {
+      console.warn("VITE_SOCKET_SERVER_URL is not set");
+      return;
+    }
+
+    const newSocket = io(url, {
+      transports: ["websocket"],
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+      setSocket(null);
+    };
+  }, [nickname, userId]);
 
   const resetKeyBindings = () => {
     setKeyBindings(defaultKeyBindings);
