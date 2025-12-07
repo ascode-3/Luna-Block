@@ -7,6 +7,7 @@ import CreateRoomPage from "./pages/CreateRoomPage";
 import WaitingRoomPage from "./pages/WaitingRoomPage";
 import TetrisPage from "./pages/TetrisPage";
 import KeySettingsPage from "./pages/KeySettingsPage";
+import MultiTetrisPage from "./pages/MultiTetrisPage";
 
 export default function MainApp() {
   const { page } = useAppContext();
@@ -27,6 +28,8 @@ export default function MainApp() {
         return <TetrisPage />;
       case "keySettings":
         return <KeySettingsPage />;
+      case "multiTetris":
+        return <MultiTetrisPage />;
       default:
         return <div>Unknown Page</div>;
     }

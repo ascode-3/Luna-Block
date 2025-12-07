@@ -24,14 +24,29 @@ export default function WaitingRoomPage() {
       );
     };
 
+    const handleMoveToTetrisPage = ({ roomId: targetRoomId }) => {
+      if (targetRoomId && targetRoomId !== roomId) return;
+      setPage("multiTetris");
+    };
+
+    const handleGameStartConfirmation = ({ status, error }) => {
+      if (status === "error") {
+        alert(error || "게임을 시작할 수 없습니다.");
+      }
+    };
+
     socket.on("playerJoined", handlePlayerJoined);
     socket.on("playerLeft", handlePlayerLeft);
+    socket.on("moveToTetrisPage", handleMoveToTetrisPage);
+    socket.on("gameStartConfirmation", handleGameStartConfirmation);
 
     return () => {
       socket.off("playerJoined", handlePlayerJoined);
       socket.off("playerLeft", handlePlayerLeft);
+      socket.off("moveToTetrisPage", handleMoveToTetrisPage);
+      socket.off("gameStartConfirmation", handleGameStartConfirmation);
     };
-  }, [socket, roomId, setRoomInfo]);
+  }, [socket, roomId, setRoomInfo, setPage]);
 
   const handleLeaveRoom = () => {
     if (socket && roomId && userId) {
@@ -40,6 +55,11 @@ export default function WaitingRoomPage() {
     setRoomId(null);
     setRoomInfo(null);
     setPage("roomList");
+  };
+
+  const handleStartGame = () => {
+    if (!socket || !roomId || !userId) return;
+    socket.emit("startGame", { roomId, userId });
   };
 
   if (!roomId || !roomInfo) {
@@ -57,6 +77,7 @@ export default function WaitingRoomPage() {
     (player) => player.userId === roomInfo.hostId
   );
   const isHost = roomInfo.hostId === userId;
+  const playerCount = roomInfo.players?.length || 0;
 
   return (
     <div>
@@ -73,7 +94,15 @@ export default function WaitingRoomPage() {
         ))}
       </ul>
       <div>
-        {isHost && <button disabled>게임 시작 (아직 미구현)</button>}
+        {isHost && (
+          <button
+            type="button"
+            onClick={handleStartGame}
+            disabled={playerCount < 2}
+          >
+            게임 시작
+          </button>
+        )}
         <button onClick={handleLeaveRoom}>나가기</button>
       </div>
     </div>

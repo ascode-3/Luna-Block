@@ -1,0 +1,401 @@
+import { useCallback, useEffect, useState } from "react";
+import { useAppContext } from "../context/AppContext";
+import { useMultiTetris } from "../hooks/useMultiTetris";
+import MiniTetrisBoard from "../components/MiniTetrisBoard";
+
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+export default function MultiTetrisPage() {
+  const {
+    socket,
+    roomId,
+    nickname,
+    userId,
+    keyBindings,
+    setPage,
+    setRoomId,
+    setRoomInfo,
+  } = useAppContext();
+
+  const {
+    linesCleared,
+    elapsedTime,
+    isGameStarted,
+    gameOver,
+    isPaused,
+    gameBoardRef,
+    holdCanvasRef,
+    nextCanvasRef,
+    startGame,
+    togglePause,
+    moveLeft,
+    moveRight,
+    softDrop,
+    hardDrop,
+    rotate,
+    hold,
+    getCurrentGameState,
+  } = useMultiTetris();
+
+  const [otherPlayers, setOtherPlayers] = useState([]);
+  const [targetPlayer, setTargetPlayer] = useState(null);
+  const [winner, setWinner] = useState(null);
+
+  useEffect(() => {
+    if (!socket || !roomId) return;
+
+    socket.emit("tetrisPageLoaded", { roomId });
+  }, [socket, roomId]);
+
+  // 게임 자동 시작
+  useEffect(() => {
+    startGame();
+  }, [startGame]);
+
+  // 키 입력 처리 (1인 테트리스와 동일한 바인딩 사용)
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const { key, repeat } = event;
+
+      if (
+        key === keyBindings.moveLeft ||
+        key === keyBindings.moveRight ||
+        key === keyBindings.softDrop ||
+        key === keyBindings.hardDrop ||
+        key === keyBindings.rotate ||
+        key === keyBindings.hold
+      ) {
+        event.preventDefault();
+      }
+
+      if (!isGameStarted || gameOver) {
+        return;
+      }
+
+      if (key === keyBindings.moveLeft) {
+        moveLeft();
+      } else if (key === keyBindings.moveRight) {
+        moveRight();
+      } else if (key === keyBindings.softDrop) {
+        softDrop();
+      } else if (key === keyBindings.hardDrop) {
+        if (!repeat) {
+          hardDrop();
+        }
+      } else if (key === keyBindings.rotate) {
+        if (!repeat) {
+          rotate();
+        }
+      } else if (key === keyBindings.hold) {
+        if (!repeat) {
+          hold();
+        }
+      } else if (key === "p" || key === "P" || key === "Escape") {
+        if (!repeat) {
+          togglePause();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [
+    keyBindings,
+    isGameStarted,
+    gameOver,
+    moveLeft,
+    moveRight,
+    softDrop,
+    hardDrop,
+    rotate,
+    hold,
+    togglePause,
+  ]);
+
+  // 상대 플레이어 상태 및 타겟, 승자 정보 수신
+  useEffect(() => {
+    if (!socket || !roomId) return;
+
+    const handleGameStateUpdate = ({ playerId, playerName, gameState }) => {
+      if (playerId === userId) return;
+
+      setOtherPlayers((prev) => {
+        const idx = prev.findIndex((p) => p.id === playerId);
+        const updated = {
+          id: playerId,
+          name: playerName || playerId,
+          gameState,
+        };
+        if (idx === -1) {
+          return [...prev, updated];
+        }
+        const copy = [...prev];
+        copy[idx] = {
+          ...copy[idx],
+          ...updated,
+        };
+        return copy;
+      });
+    };
+
+    const handlePlayerGameOver = ({ playerId }) => {
+      if (playerId === userId) return;
+      setOtherPlayers((prev) =>
+        prev.map((p) =>
+          p.id === playerId
+            ? { ...p, gameState: { ...p.gameState, isGameOver: true } }
+            : p,
+        ),
+      );
+    };
+
+    const handlePlayerDisconnect = (playerId) => {
+      setOtherPlayers((prev) => prev.filter((p) => p.id !== playerId));
+    };
+
+    const handleGameWin = ({ winner: winnerInfo }) => {
+      setWinner(winnerInfo || null);
+    };
+
+    const handleTargetAssigned = ({ targetId, targetName }) => {
+      setTargetPlayer({ id: targetId, name: targetName });
+    };
+
+    socket.on("gameStateUpdate", handleGameStateUpdate);
+    socket.on("playerGameOver", handlePlayerGameOver);
+    socket.on("playerDisconnect", handlePlayerDisconnect);
+    socket.on("gameWin", handleGameWin);
+    socket.on("targetAssigned", handleTargetAssigned);
+
+    return () => {
+      socket.off("gameStateUpdate", handleGameStateUpdate);
+      socket.off("playerGameOver", handlePlayerGameOver);
+      socket.off("playerDisconnect", handlePlayerDisconnect);
+      socket.off("gameWin", handleGameWin);
+      socket.off("targetAssigned", handleTargetAssigned);
+    };
+  }, [socket, roomId, userId]);
+
+  // 주기적으로 내 게임 상태를 서버에 전송
+  useEffect(() => {
+    if (!socket || !roomId) return;
+
+    const intervalId = setInterval(() => {
+      const gameState = getCurrentGameState();
+      socket.emit("updateGameState", { roomId, gameState });
+    }, 100);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [socket, roomId, getCurrentGameState]);
+
+  const handleContinue = useCallback(() => {
+    if (socket && roomId) {
+      socket.emit("restartGame", { roomId });
+    }
+    setPage("waitingRoom");
+  }, [socket, roomId, setPage]);
+
+  const handleLeaveGame = useCallback(() => {
+    if (socket && roomId && userId) {
+      socket.emit("leaveRoom", { roomId, userId });
+    }
+    setRoomId(null);
+    setRoomInfo(null);
+    setPage("roomList");
+  }, [socket, roomId, userId, setRoomId, setRoomInfo, setPage]);
+
+  if (!roomId) {
+    return (
+      <div>
+        <p>방 정보가 없습니다.</p>
+        <button type="button" onClick={() => setPage("roomList")}>
+          방 목록으로 돌아가기
+        </button>
+      </div>
+    );
+  }
+
+  const aliveOpponents = otherPlayers.filter(
+    (player) => !player.gameState?.isGameOver,
+  );
+
+  return (
+    <div>
+      <h2>멀티 테트리스</h2>
+      <p>
+        닉네임: {nickname} / 방 ID: {roomId}
+      </p>
+      <div
+        style={{
+          display: "flex",
+          gap: 24,
+          alignItems: "flex-start",
+          justifyContent: "center",
+        }}
+      >
+        {/* 왼쪽: Hold + 타겟 + 조작법 */}
+        <div
+          style={{
+            minWidth: 220,
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
+          <div>
+            <h3>Hold</h3>
+            <canvas
+              ref={holdCanvasRef}
+              style={{ border: "1px solid #ccc", backgroundColor: "#000" }}
+            />
+          </div>
+          <div>
+            <h3>Target</h3>
+            <p>{targetPlayer ? targetPlayer.name : "없음"}</p>
+          </div>
+          <div>
+            <h3>조작법</h3>
+            <ul>
+              <li>
+                좌우 이동: {keyBindings.moveLeft} / {keyBindings.moveRight}
+              </li>
+              <li>회전: {keyBindings.rotate}</li>
+              <li>소프트 드롭: {keyBindings.softDrop}</li>
+              <li>하드 드롭: {keyBindings.hardDrop}</li>
+              <li>홀드: {keyBindings.hold}</li>
+              <li>일시정지: P 또는 Esc</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* 중앙: 내 필드 */}
+        <div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 8,
+            }}
+          >
+            <div>
+              <span>클리어 라인: </span>
+              <strong>{linesCleared}</strong>
+            </div>
+            <div>
+              <span>시간: </span>
+              <strong>{formatTime(elapsedTime)}</strong>
+            </div>
+          </div>
+          <div
+            style={{
+              position: "relative",
+              border: "1px solid #ccc",
+              display: "inline-block",
+            }}
+          >
+            <canvas
+              ref={gameBoardRef}
+              style={{ display: "block", backgroundColor: "#000" }}
+            />
+
+            {gameOver && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "rgba(0,0,0,0.7)",
+                  color: "#fff",
+                  gap: 8,
+                }}
+              >
+                <h3>게임 오버</h3>
+                <p>결과는 잠시 후 갱신됩니다.</p>
+              </div>
+            )}
+
+            {isPaused && !gameOver && isGameStarted && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  color: "#fff",
+                  gap: 8,
+                }}
+              >
+                <h3>일시정지</h3>
+                <p>P 또는 Esc 키로 계속하기</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 오른쪽: 상대 필드들 */}
+        <div style={{ minWidth: 220 }}>
+          <h3>상대 필드</h3>
+          {aliveOpponents.length === 0 ? (
+            <p>다른 플레이어가 없습니다.</p>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 12,
+              }}
+            >
+              {aliveOpponents.map((player) => (
+                <div key={player.id} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 12, marginBottom: 4 }}>
+                    {player.name}
+                  </div>
+                  <MiniTetrisBoard gameState={player.gameState} />
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={{ marginTop: 16 }}>
+            <button type="button" onClick={handleLeaveGame}>
+              나가기 (방 목록)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 승자 정보 및 계속하기 */}
+      {winner && (
+        <div style={{ marginTop: 24 }}>
+          <h3>게임 종료</h3>
+          <p>
+            {winner.id === userId
+              ? "축하합니다! 당신이 우승했습니다."
+              : `${winner.name}님이 우승했습니다.`}
+          </p>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="button" onClick={handleContinue}>
+              계속하기 (대기실)
+            </button>
+            <button type="button" onClick={handleLeaveGame}>
+              나가기 (방 목록)
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
