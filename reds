@@ -4,3 +4,5 @@ npm install
 
 
 npm run dev
+
+- 파악하기
