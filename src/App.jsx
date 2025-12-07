@@ -1,5 +1,6 @@
 import { AppProvider } from "./context/AppContext";
 import MainApp from "./MainApp";
+import './app.css';
 
 function App() {
   return (
