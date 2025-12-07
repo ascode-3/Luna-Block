@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { useMultiTetris } from "../hooks/useMultiTetris";
 import MiniTetrisBoard from "../components/MiniTetrisBoard";
+import "../styles/MultiTetrisPage.css";
 
 function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
@@ -228,42 +229,35 @@ export default function MultiTetrisPage() {
   );
 
   return (
-    <div>
-      <h2>멀티 테트리스</h2>
-      <p>
-        닉네임: {nickname} / 방 ID: {roomId}
-      </p>
-      <div
-        style={{
-          display: "flex",
-          gap: 24,
-          alignItems: "flex-start",
-          justifyContent: "center",
-        }}
-      >
-        {/* 왼쪽: Hold + 타겟 + 조작법 */}
-        <div
-          style={{
-            minWidth: 220,
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-          }}
-        >
-          <div>
+    <div className="multi-tetris-page">
+      <div className="multi-header">
+        <h2>멀티 테트리스</h2>
+        <p>
+          닉네임: {nickname} / 방 ID: {roomId}
+        </p>
+      </div>
+
+      <div className="multi-main-layout">
+        {/* 왼쪽: Hold / Next / Target / 조작법 */}
+        <div className="multi-side-panel">
+          <div className="multi-panel">
             <h3>Hold</h3>
-            <canvas
-              ref={holdCanvasRef}
-              style={{ border: "1px solid #ccc", backgroundColor: "#000" }}
-            />
+            <canvas ref={holdCanvasRef} className="multi-hold-canvas" />
           </div>
-          <div>
+
+          <div className="multi-panel">
+            <h3>Next</h3>
+            <canvas ref={nextCanvasRef} className="multi-next-canvas" />
+          </div>
+
+          <div className="multi-panel">
             <h3>Target</h3>
             <p>{targetPlayer ? targetPlayer.name : "없음"}</p>
           </div>
-          <div>
+
+          <div className="multi-panel">
             <h3>조작법</h3>
-            <ul>
+            <ul className="multi-controls-list">
               <li>
                 좌우 이동: {keyBindings.moveLeft} / {keyBindings.moveRight}
               </li>
@@ -277,14 +271,8 @@ export default function MultiTetrisPage() {
         </div>
 
         {/* 중앙: 내 필드 */}
-        <div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 8,
-            }}
-          >
+        <div className="multi-center-panel">
+          <div className="multi-game-info">
             <div>
               <span>클리어 라인: </span>
               <strong>{linesCleared}</strong>
@@ -294,51 +282,19 @@ export default function MultiTetrisPage() {
               <strong>{formatTime(elapsedTime)}</strong>
             </div>
           </div>
-          <div
-            style={{
-              position: "relative",
-              border: "1px solid #ccc",
-              display: "inline-block",
-            }}
-          >
-            <canvas
-              ref={gameBoardRef}
-              style={{ display: "block", backgroundColor: "#000" }}
-            />
+
+          <div className="multi-game-area">
+            <canvas ref={gameBoardRef} className="multi-game-canvas" />
 
             {gameOver && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "rgba(0,0,0,0.7)",
-                  color: "#fff",
-                  gap: 8,
-                }}
-              >
+              <div className="multi-overlay">
                 <h3>게임 오버</h3>
                 <p>결과는 잠시 후 갱신됩니다.</p>
               </div>
             )}
 
             {isPaused && !gameOver && isGameStarted && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "rgba(0,0,0,0.5)",
-                  color: "#fff",
-                  gap: 8,
-                }}
-              >
+              <div className="multi-overlay">
                 <h3>일시정지</h3>
                 <p>P 또는 Esc 키로 계속하기</p>
               </div>
@@ -347,39 +303,35 @@ export default function MultiTetrisPage() {
         </div>
 
         {/* 오른쪽: 상대 필드들 */}
-        <div style={{ minWidth: 220 }}>
-          <h3>상대 필드</h3>
-          {aliveOpponents.length === 0 ? (
-            <p>다른 플레이어가 없습니다.</p>
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 12,
-              }}
-            >
-              {aliveOpponents.map((player) => (
-                <div key={player.id} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 12, marginBottom: 4 }}>
-                    {player.name}
+        <div className="multi-opponent-panel">
+          <div className="multi-panel">
+            <h3>상대 필드</h3>
+            {aliveOpponents.length === 0 ? (
+              <p>다른 플레이어가 없습니다.</p>
+            ) : (
+              <div className="multi-opponent-grid">
+                {aliveOpponents.map((player) => (
+                  <div key={player.id} className="multi-opponent-item">
+                    <div className="multi-opponent-name">{player.name}</div>
+                    <MiniTetrisBoard gameState={player.gameState} />
                   </div>
-                  <MiniTetrisBoard gameState={player.gameState} />
-                </div>
-              ))}
-            </div>
-          )}
-          <div style={{ marginTop: 16 }}>
-            <button type="button" onClick={handleLeaveGame}>
-              나가기 (방 목록)
-            </button>
+                ))}
+              </div>
+            )}
           </div>
+          <button
+            type="button"
+            onClick={handleLeaveGame}
+            className="multi-leave-button"
+          >
+            나가기 (방 목록)
+          </button>
         </div>
       </div>
 
       {/* 승자 정보 및 계속하기 */}
       {winner && (
-        <div style={{ marginTop: 24 }}>
+        <div className="multi-result-panel">
           <h3>게임 종료</h3>
           <p>
             {winner.id === userId

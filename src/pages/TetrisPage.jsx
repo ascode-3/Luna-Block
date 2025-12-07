@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
 import { useSingleTetris } from "../hooks/useSingleTetris";
+import "../styles/SingleTetrisPage.css";
 
 function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
@@ -93,143 +94,107 @@ export default function TetrisPage() {
   ]);
 
   return (
-    <div>
+    <div className="mini-tetris-container">
       <h2>1인 테트리스</h2>
       <p>닉네임: {nickname}</p>
-      <div
-        style={{
-          display: "flex",
-          gap: "24px",
-          alignItems: "flex-start",
-          justifyContent: "center",
-        }}
-      >
-        {/* 왼쪽: Hold + 조작법 */}
-        <div style={{ minWidth: 200, display: "flex", flexDirection: "column", gap: 16 }}>
-          <div>
+      <div className="game-layout">
+        {/* 왼쪽: Hold + 조작법 + 방해 효과 */}
+        <div className="side-panel left-panel">
+          <div className="panel-section">
             <h3>Hold</h3>
-            <canvas
-              ref={holdCanvasRef}
-              style={{ border: "1px solid #ccc", backgroundColor: "#000" }}
-            />
+            <canvas ref={holdCanvasRef} className="preview-canvas" />
           </div>
-          <div>
+
+          <div className="panel-section controls-panel">
             <h3>조작법</h3>
-            <ul>
-              <li>
-                좌우 이동: {keyBindings.moveLeft} / {keyBindings.moveRight}
-              </li>
-              <li>회전: {keyBindings.rotate}</li>
-              <li>소프트 드롭: {keyBindings.softDrop}</li>
-              <li>하드 드롭: {keyBindings.hardDrop}</li>
-              <li>홀드: {keyBindings.hold}</li>
-              <li>일시정지: P 또는 Esc</li>
-            </ul>
+            <div className="controls-list">
+              <p>
+                  : 좌우 이동 ({keyBindings.moveLeft} / {keyBindings.moveRight})
+              </p>
+              <p> : 회전 ({keyBindings.rotate})</p>
+              <p> : 소프트 드롭 ({keyBindings.softDrop})</p>
+              <p>Space : 하드 드롭 ({keyBindings.hardDrop})</p>
+              <p>Shift : 홀드 ({keyBindings.hold})</p>
+              <p>P / Esc : 일시정지</p>
+            </div>
+          </div>
+
+          <div className="panel-section effect-panel">
+            <h3>방해 효과</h3>
+            <div className="effect-description">
+              <p>(튜토리얼) 방해 효과 없음</p>
+            </div>
           </div>
         </div>
 
         {/* 중앙: 게임 보드 및 정보 */}
-        <div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 8,
-            }}
-          >
-            <div>
-              <span>클리어 라인: </span>
-              <strong>{linesCleared}</strong>
+        <div className="center-panel">
+          <div className="game-info">
+            <div className="info-item">
+              <span className="info-label">라인:</span>
+              <span className="info-value">{linesCleared}</span>
             </div>
-            <div>
-              <span>시간: </span>
-              <strong>{formatTime(elapsedTime)}</strong>
+            <div className="info-item">
+              <span className="info-label">시간:</span>
+              <span className="info-value">{formatTime(elapsedTime)}</span>
             </div>
           </div>
-          <div
-            style={{
-              position: "relative",
-              border: "1px solid #ccc",
-              display: "inline-block",
-            }}
-          >
-            <canvas
-              ref={gameBoardRef}
-              style={{ display: "block", backgroundColor: "#000" }}
-            />
+
+          <div className="game-area">
+            <canvas ref={gameBoardRef} className="game-canvas" />
 
             {!isGameStarted && !gameOver && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "rgba(0,0,0,0.6)",
-                  color: "#fff",
-                  gap: 12,
-                }}
-              >
-                <h3>루나 블록 - 1인 테트리스</h3>
-                <button onClick={startGame}>게임 시작</button>
-                <button onClick={() => setPage("lobby")}>로비로 돌아가기</button>
+              <div className="game-overlay">
+                <h2>루나 블록 - 1인 테트리스</h2>
+                <p>7줄을 클리어해 보세요!</p>
+                <button onClick={startGame} className="start-button">
+                  게임 시작
+                </button>
+                <div className="overlay-buttons">
+                  <button
+                    onClick={() => setPage("lobby")}
+                    className="back-button"
+                  >
+                    로비로 돌아가기
+                  </button>
+                </div>
               </div>
             )}
 
             {gameOver && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "rgba(0,0,0,0.7)",
-                  color: "#fff",
-                  gap: 12,
-                }}
-              >
-                <h3>게임 오버</h3>
-                <p>클리어한 라인: {linesCleared}</p>
-                <p>플레이 시간: {formatTime(elapsedTime)}</p>
-                <button onClick={restartGame}>다시 시작</button>
-                <button onClick={() => setPage("lobby")}>
+              <div className="game-overlay">
+                <h2>게임 오버</h2>
+                <p className="final-info">클리어한 라인: {linesCleared}</p>
+                <p className="final-info">
+                  플레이 시간: {formatTime(elapsedTime)}
+                </p>
+                <button onClick={restartGame} className="restart-button">
+                  다시 시작
+                </button>
+                <button
+                  onClick={() => setPage("lobby")}
+                  className="back-button"
+                >
                   로비로 돌아가기
                 </button>
               </div>
             )}
 
             {isPaused && !gameOver && isGameStarted && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "rgba(0,0,0,0.5)",
-                  color: "#fff",
-                  gap: 8,
-                }}
-              >
-                <h3>일시정지</h3>
+              <div className="game-overlay">
+                <h2>일시정지</h2>
                 <p>P 또는 Esc 키로 계속하기</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* 오른쪽: Next 4개 */}
-        <div style={{ minWidth: 160 }}>
-          <h3>Next</h3>
-          <canvas
-            ref={nextCanvasRef}
-            style={{ border: "1px solid #ccc", backgroundColor: "#000" }}
-          />
+        {/* 오른쪽: Next */}
+        <div className="side-panel right-panel">
+          <div className="panel-section next-panel">
+            <h3>Next</h3>
+            <canvas ref={nextCanvasRef} className="next-canvas" />
+          </div>
         </div>
       </div>
     </div>

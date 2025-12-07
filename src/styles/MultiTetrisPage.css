@@ -1,0 +1,107 @@
+.multi-tetris-page {
+  padding: 16px;
+  min-height: 100vh;
+}
+
+.multi-header {
+  margin-bottom: 12px;
+}
+
+.multi-main-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.multi-side-panel,
+.multi-opponent-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 220px;
+}
+
+.multi-panel {
+  background-color: #111;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #f5f5f5;
+  font-size: 14px;
+}
+
+.multi-panel h3 {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+}
+
+.multi-hold-canvas,
+.multi-next-canvas {
+  display: block;
+  background-color: #000;
+  border: 1px solid #333;
+}
+
+.multi-controls-list {
+  padding-left: 18px;
+  margin: 0;
+}
+
+.multi-center-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.multi-game-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.multi-game-area {
+  position: relative;
+  border: 1px solid #444;
+  display: inline-block;
+  background-color: #000;
+}
+
+.multi-game-canvas {
+  display: block;
+}
+
+.multi-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  gap: 8px;
+}
+
+.multi-opponent-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.multi-opponent-item {
+  text-align: center;
+  font-size: 12px;
+}
+
+.multi-opponent-name {
+  margin-bottom: 4px;
+}
+
+.multi-leave-button {
+  margin-top: 8px;
+}
+
+.multi-result-panel {
+  margin-top: 24px;
+}

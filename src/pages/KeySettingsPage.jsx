@@ -10,6 +10,13 @@ const actions = [
   { key: "hold", label: "홀드" },
 ];
 
+function formatKeyLabel(key) {
+  if (!key) return "";
+  if (key === " ") return "Space";
+  if (key === "Escape") return "Esc";
+  return key.length === 1 ? key.toUpperCase() : key;
+}
+
 export default function KeySettingsPage() {
   const { keyBindings, setKeyBindings, resetKeyBindings, setPage } = useAppContext();
   const [editingAction, setEditingAction] = useState(null);
@@ -51,7 +58,7 @@ export default function KeySettingsPage() {
           {actions.map((action) => (
             <tr key={action.key}>
               <td>{action.label}</td>
-              <td>{keyBindings[action.key]}</td>
+              <td>{formatKeyLabel(keyBindings[action.key])}</td>
               <td>
                 <button onClick={() => setEditingAction(action.key)}>
                   {editingAction === action.key ? "입력 대기 중..." : "변경"}

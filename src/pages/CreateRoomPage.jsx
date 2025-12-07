@@ -9,6 +9,7 @@ export default function CreateRoomPage() {
   const [maxPlayers, setMaxPlayers] = useState(6);
   const [isPrivate, setIsPrivate] = useState(false);
   const [password, setPassword] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     if (!socket) {
@@ -16,6 +17,7 @@ export default function CreateRoomPage() {
     }
 
     const handleRoomCreated = ({ roomId, room }) => {
+      setIsCreating(false);
       setRoomId(roomId);
       setRoomInfo(room);
       setPage("waitingRoom");
@@ -24,6 +26,7 @@ export default function CreateRoomPage() {
     const handleRoomCreateError = (payload) => {
       const message = payload?.message || "방 생성에 실패했습니다.";
       alert(message);
+      setIsCreating(false);
     };
 
     socket.on("roomCreated", handleRoomCreated);
@@ -38,7 +41,9 @@ export default function CreateRoomPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!socket || !userId || !nickname) return;
+    if (isCreating) return;
 
+    setIsCreating(true);
     socket.emit("createRoom", {
       roomName,
       maxPlayers,
@@ -110,7 +115,9 @@ export default function CreateRoomPage() {
           </div>
         )}
         <div>
-          <button type="submit">생성하기</button>
+          <button type="submit" disabled={isCreating}>
+            {isCreating ? "생성 중..." : "생성하기"}
+          </button>
           <button type="button" onClick={() => setPage("roomList")}>
             취소
           </button>
