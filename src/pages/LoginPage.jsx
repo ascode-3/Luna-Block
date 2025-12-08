@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAppContext } from "../context/AppContext";
+import "./LoginPage.css"; // CSS 파일을 임포트합니다.
 
 function LoginPage() {
   const [localNickname, setLocalNickname] = useState("");
@@ -18,15 +19,26 @@ function LoginPage() {
   };
 
   return (
-    <div>
-      <h1>멀티 테트리스</h1>
-      <input
-        type="text"
-        placeholder="닉네임 입력"
-        value={localNickname}
-        onChange={(e) => setLocalNickname(e.target.value)}
-      />
-      <button onClick={handleLogin}>입장하기</button>
+    <div className="login-container">
+      <div className="glass-card">
+        <h1 className="title">Luna Tetris</h1>
+        <p className="subtitle">달의 가호가 함께 하기를</p>
+        
+        <div className="input-group">
+          <input
+            type="text"
+            className="glass-input"
+            placeholder="닉네임을 입력하세요"
+            value={localNickname}
+            onChange={(e) => setLocalNickname(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()} // 엔터키 편의성만 살짝 추가
+          />
+        </div>
+        
+        <button className="glass-button" onClick={handleLogin}>
+          입장하기
+        </button>
+      </div>
     </div>
   );
 }
