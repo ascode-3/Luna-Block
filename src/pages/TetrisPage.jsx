@@ -95,8 +95,6 @@ export default function TetrisPage() {
 
   return (
     <div className="mini-tetris-container">
-      <h2>1인 테트리스</h2>
-      <p>닉네임: {nickname}</p>
       <div className="game-layout">
         {/* 왼쪽: Hold + 조작법 + 방해 효과 */}
         <div className="side-panel left-panel">
@@ -116,13 +114,6 @@ export default function TetrisPage() {
               <p>Space : 하드 드롭 ({keyBindings.hardDrop})</p>
               <p>Shift : 홀드 ({keyBindings.hold})</p>
               <p>P / Esc : 일시정지</p>
-            </div>
-          </div>
-
-          <div className="panel-section effect-panel">
-            <h3>방해 효과</h3>
-            <div className="effect-description">
-              <p>(튜토리얼) 방해 효과 없음</p>
             </div>
           </div>
         </div>
