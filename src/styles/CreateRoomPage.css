@@ -1,0 +1,126 @@
+/* 컨테이너 크기 조정 */
+.create-room-container {
+  width: 450px;
+  max-width: 90%;
+}
+
+/* 폼 스타일 */
+.glass-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  text-align: left; /* 라벨 왼쪽 정렬 */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+/* 글래스모피즘 입력창 (Input) */
+.glass-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* 입력창 포커스 효과 (빛나는 테두리) */
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #b7ddff;
+  box-shadow: 0 0 10px rgba(183, 221, 255, 0.3);
+}
+
+/* 토글 스위치 그룹 (라벨과 스위치를 가로로 배치) */
+.toggle-group {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin: 5px 0;
+  padding: 0 4px;
+}
+
+/* --- 토글 스위치 디자인 --- */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+/* 기본 체크박스 숨김 */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* 슬라이더 (배경 트랙) */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: .4s;
+  border-radius: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 동그라미 버튼 */
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* 체크되었을 때 (Active) */
+input:checked + .slider {
+  background-color: #b7ddff; /* 테마 컬러 */
+  border-color: #b7ddff;
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px); /* 오른쪽으로 이동 */
+  background-color: #1a2a6c; /* 동그라미 색상 반전 효과 */
+}
+
+/* --- 버튼 영역 --- */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* 버튼 비율 조정 */
+.form-actions .glass-button {
+  flex: 1;
+}

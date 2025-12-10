@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { motion } from "framer-motion";
-import "./KeySettingsPage.css"; // 스타일 파일 분리
+import "../styles/KeySettingsPage.css"; // 스타일 파일 분리
 
 const actions = [
   { key: "moveLeft", label: "왼쪽 이동" },

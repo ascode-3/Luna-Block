@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAppContext } from "../context/AppContext";
-import "./LoginPage.css"; // CSS 파일을 임포트합니다.
+import "../styles/LoginPage.css"; // CSS 파일을 임포트합니다.
 
 function LoginPage() {
   const [localNickname, setLocalNickname] = useState("");

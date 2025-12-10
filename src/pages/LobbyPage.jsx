@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { motion } from "framer-motion";
-import "./LobbyPage.css";
+import "../styles/LobbyPage.css";
 
 export default function LobbyPage() {
   const { setPage } = useAppContext();
