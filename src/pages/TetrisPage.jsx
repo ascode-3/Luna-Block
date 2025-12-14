@@ -97,10 +97,14 @@ export default function TetrisPage() {
     <div className="mini-tetris-container">
       <div className="game-layout">
         {/* 왼쪽: Hold + 조작법 + 방해 효과 */}
-        <div className="side-panel left-panel">
+        <div className="side-panel">
           <div className="panel-section">
             <h3>Hold</h3>
-            <canvas ref={holdCanvasRef} className="preview-canvas" />
+            <canvas ref={holdCanvasRef}
+             className="preview-canvas"
+             width={96}
+             height={96}
+             />
           </div>
 
           <div className="panel-section controls-panel">
@@ -184,7 +188,10 @@ export default function TetrisPage() {
         <div className="side-panel right-panel">
           <div className="panel-section next-panel">
             <h3>Next</h3>
-            <canvas ref={nextCanvasRef} className="next-canvas" />
+            <canvas ref={nextCanvasRef} className="next-canvas"
+            width={96}
+             height={285}
+             />
           </div>
         </div>
       </div>
