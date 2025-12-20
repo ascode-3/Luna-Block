@@ -1,4 +1,4 @@
-﻿import { useEffect } from "react";
+﻿import { useEffect, useRef } from "react";
 import { useAppContext } from "../context/AppContext";
 import { useSingleTetris } from "../hooks/useSingleTetris";
 import "../styles/SingleTetrisPage.css";
@@ -11,6 +11,8 @@ function formatTime(seconds) {
 
 export default function TetrisPage() {
   const { nickname, keyBindings, setPage } = useAppContext();
+
+  const keyRepeatTimersRef = useRef({});
 
   const {
     linesCleared,
@@ -31,8 +33,52 @@ export default function TetrisPage() {
     rotate,
     hold,
   } = useSingleTetris();
-
+  // DAS (Delayed Auto Shift) 및 ARR (Auto Repeat Rate) 설정
+  // DAS: 키를 누르고 있는 동안 처음 이동하기까지의 지연 시간
+  // ARR: 키를 누르고 있는 동안 연속 이동하는 간격
   useEffect(() => {
+    const DAS_MS = 150;
+    const ARR_MS = 35;
+
+    const clearRepeatForCode = (code) => {
+      const entry = keyRepeatTimersRef.current[code];
+      if (!entry) return;
+      if (entry.timeoutId) {
+        clearTimeout(entry.timeoutId);
+      }
+      if (entry.intervalId) {
+        clearInterval(entry.intervalId);
+      }
+      delete keyRepeatTimersRef.current[code];
+    };
+
+    const clearAllRepeats = () => {
+      Object.keys(keyRepeatTimersRef.current).forEach((code) => {
+        clearRepeatForCode(code);
+      });
+    };
+
+    const startDAS = (code, action) => {
+      if (keyRepeatTimersRef.current[code]) return;
+
+      action();
+
+      const timeoutId = setTimeout(() => {
+        const intervalId = setInterval(() => {
+          action();
+        }, ARR_MS);
+        const entry = keyRepeatTimersRef.current[code];
+        if (entry) {
+          entry.intervalId = intervalId;
+          entry.timeoutId = null;
+        } else {
+          clearInterval(intervalId);
+        }
+      }, DAS_MS);
+
+      keyRepeatTimersRef.current[code] = { timeoutId, intervalId: null };
+    };
+
     const handleKeyDown = (event) => {
       const { code, repeat } = event;
 
@@ -48,15 +94,16 @@ export default function TetrisPage() {
       }
 
       if (!isGameStarted || gameOver) {
+        clearAllRepeats();
         return;
       }
 
       if (code === keyBindings.moveLeft) {
-        moveLeft();
+        if (!repeat) startDAS(code, moveLeft);
       } else if (code === keyBindings.moveRight) {
-        moveRight();
+        if (!repeat) startDAS(code, moveRight);
       } else if (code === keyBindings.softDrop) {
-        softDrop();
+        if (!repeat) startDAS(code, softDrop);
       } else if (code === keyBindings.hardDrop) {
         if (!repeat) {
           hardDrop();
@@ -76,9 +123,25 @@ export default function TetrisPage() {
       }
     };
 
+    const handleKeyUp = (event) => {
+      const { code } = event;
+      if (
+        code === keyBindings.moveLeft ||
+        code === keyBindings.moveRight ||
+        code === keyBindings.softDrop
+      ) {
+        clearRepeatForCode(code);
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", clearAllRepeats);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", clearAllRepeats);
+      clearAllRepeats();
     };
   }, [
     keyBindings,
