@@ -34,15 +34,15 @@ export default function TetrisPage() {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      const { key, repeat } = event;
+      const { code, repeat } = event;
 
       if (
-        key === keyBindings.moveLeft ||
-        key === keyBindings.moveRight ||
-        key === keyBindings.softDrop ||
-        key === keyBindings.hardDrop ||
-        key === keyBindings.rotate ||
-        key === keyBindings.hold
+        code === keyBindings.moveLeft ||
+        code === keyBindings.moveRight ||
+        code === keyBindings.softDrop ||
+        code === keyBindings.hardDrop ||
+        code === keyBindings.rotate ||
+        code === keyBindings.hold
       ) {
         event.preventDefault();
       }
@@ -51,25 +51,25 @@ export default function TetrisPage() {
         return;
       }
 
-      if (key === keyBindings.moveLeft) {
+      if (code === keyBindings.moveLeft) {
         moveLeft();
-      } else if (key === keyBindings.moveRight) {
+      } else if (code === keyBindings.moveRight) {
         moveRight();
-      } else if (key === keyBindings.softDrop) {
+      } else if (code === keyBindings.softDrop) {
         softDrop();
-      } else if (key === keyBindings.hardDrop) {
+      } else if (code === keyBindings.hardDrop) {
         if (!repeat) {
           hardDrop();
         }
-      } else if (key === keyBindings.rotate) {
+      } else if (code === keyBindings.rotate) {
         if (!repeat) {
           rotate();
         }
-      } else if (key === keyBindings.hold) {
+      } else if (code === keyBindings.hold) {
         if (!repeat) {
           hold();
         }
-      } else if (key === "p" || key === "P" || key === "Escape") {
+      } else if (code === "KeyP" || code === "Escape") {
         if (!repeat) {
           togglePause();
         }
@@ -115,8 +115,8 @@ export default function TetrisPage() {
               </p>
               <p> : 회전 ({keyBindings.rotate})</p>
               <p> : 소프트 드롭 ({keyBindings.softDrop})</p>
-              <p>Space : 하드 드롭 ({keyBindings.hardDrop})</p>
-              <p>Shift : 홀드 ({keyBindings.hold})</p>
+              <p>하드 드롭 ({keyBindings.hardDrop})</p>
+              <p>홀드 ({keyBindings.hold})</p>
               <p>P / Esc : 일시정지</p>
             </div>
           </div>
