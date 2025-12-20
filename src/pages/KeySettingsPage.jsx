@@ -12,15 +12,15 @@ const actions = [
   { key: "hold", label: "홀드" },
 ];
 
-function formatKeyLabel(key) {
-  if (!key) return "";
-  if (key === " ") return "Space";
-  if (key === "Escape") return "Esc";
-  if (key === "ArrowUp") return "↑";
-  if (key === "ArrowDown") return "↓";
-  if (key === "ArrowLeft") return "←";
-  if (key === "ArrowRight") return "→";
-  return key.length === 1 ? key.toUpperCase() : key;
+function formatKeyLabel(code) {
+  if (!code) return "";
+  if (code === " ") return "Space";
+  if (code === "Escape") return "Esc";
+  if (code === "ArrowUp") return "↑";
+  if (code === "ArrowDown") return "↓";
+  if (code === "ArrowLeft") return "←";
+  if (code === "ArrowRight") return "→";
+  return code.length === 1 ? code.toUpperCase() : code;
 }
 
 export default function KeySettingsPage() {
@@ -43,10 +43,10 @@ export default function KeySettingsPage() {
 
     const handleKeyDown = (event) => {
       event.preventDefault();
-      const { key } = event;
+      const { code } = event;
       setKeyBindings((prev) => ({
         ...prev,
-        [editingAction]: key,
+        [editingAction]: code,
       }));
       setEditingAction(null);
     };
@@ -82,30 +82,38 @@ export default function KeySettingsPage() {
                 <th style={{ width: "100px" }}>설정</th>
               </tr>
             </thead>
-            <tbody>
-              {actions.map((action) => {
-                const isEditing = editingAction === action.key;
-                return (
-                  <tr key={action.key} className={isEditing ? "editing-row" : ""}>
-                    <td>{action.label}</td>
-                    <td className="key-value">
-                        {/* 키 값이 돋보이도록 배지 스타일 적용 */}
-                        <span className="key-badge">
-                            {formatKeyLabel(keyBindings[action.key])}
-                        </span>
-                    </td>
-                    <td>
-                      <button 
-                        className={`small-glass-button ${isEditing ? "active" : ""}`}
-                        onClick={() => setEditingAction(action.key)}
-                      >
-                        {isEditing ? "입력..." : "변경"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
+                <tbody>
+      {actions.map((action) => {
+        const actionId = action.key;          // 액션 식별자
+        const isEditing = editingAction === actionId;
+        const boundCode = keyBindings[actionId]; // 실제 키보드 code
+
+        return (
+          <tr
+            key={actionId}
+            className={isEditing ? "editing-row" : ""}
+          >
+            <td>{action.label}</td>
+
+            <td className="key-value">
+              <span className="key-badge">
+                {formatKeyLabel(boundCode)}
+              </span>
+            </td>
+
+            <td>
+              <button
+                className={`small-glass-button ${isEditing ? "active" : ""}`}
+                onClick={() => setEditingAction(actionId)}
+              >
+                {isEditing ? "입력..." : "변경"}
+              </button>
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+
           </table>
         </div>
 
