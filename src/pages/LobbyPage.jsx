@@ -12,10 +12,10 @@ export default function LobbyPage() {
   const handleNavigate = (targetPage, id) => {
     setExitState({ isExiting: true, clickedId: id });
 
-    // 0.5초(500ms) 동안 애니메이션을 보여준 뒤 페이지 이동
+    // 0.3초(300ms) 동안 애니메이션을 보여준 뒤 페이지 이동
     setTimeout(() => {
       setPage(targetPage);
-    }, 500);
+    }, 300);
   };
 
   const menuItems = [

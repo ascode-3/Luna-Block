@@ -35,7 +35,7 @@ export default function KeySettingsPage() {
     setIsExiting(true);
     setTimeout(() => {
       setPage("lobby");
-    }, 500); // 0.5초 뒤 페이지 전환
+    }, 300); // 0.3초 뒤 페이지 전환
   };
 
   useEffect(() => {

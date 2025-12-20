@@ -203,8 +203,8 @@ export default function TetrisPage() {
 
             {!isGameStarted && !gameOver && (
               <div className="game-overlay">
-                <h2>루나 블록 - 1인 테트리스</h2>
-                <p>7줄을 클리어해 보세요!</p>
+                <h2>루나 테트리스</h2>
+                <p>본인의 실력을 무한 모드에서 테스트해 보세요!</p>
                 <button onClick={startGame} className="start-button">
                   게임 시작
                 </button>

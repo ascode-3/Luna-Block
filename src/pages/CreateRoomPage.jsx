@@ -44,7 +44,7 @@ export default function CreateRoomPage() {
     setIsExiting(true);
     setTimeout(() => {
       setPage("roomList");
-    }, 500);
+    }, 300);
   };
 
   const handleSubmit = (event) => {

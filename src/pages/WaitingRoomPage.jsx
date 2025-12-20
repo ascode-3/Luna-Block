@@ -51,7 +51,7 @@ export default function WaitingRoomPage() {
         setRoomId(null);
         setRoomInfo(null);
         setPage("roomList");
-    }, 500);
+    }, 300);
   };
 
   const handleStartGame = () => {
