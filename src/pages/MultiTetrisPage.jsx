@@ -294,13 +294,9 @@ export default function MultiTetrisPage() {
   return (
     <div className="multi-tetris-page">
       <div className="multi-header">
-        <h2>멀티 테트리스</h2>
-        <p>
-          닉네임: {nickname} / 방 ID: {roomId}
-        </p>
       </div>
 
-      <div className="multi-main-layout">
+      <div className={`multi-main-layout ${winner ? 'blurred' : ''}`}>
         {/* 왼쪽: Hold / Next / Target / 조작법 */}
         <div className="multi-side-panel">
           <div className="multi-panel">
@@ -311,11 +307,6 @@ export default function MultiTetrisPage() {
           <div className="multi-panel">
             <h3>Next</h3>
             <canvas ref={nextCanvasRef} className="multi-next-canvas" />
-          </div>
-
-          <div className="multi-panel">
-            <h3>Target</h3>
-            <p>{targetPlayer ? targetPlayer.name : "없음"}</p>
           </div>
 
           <div className="multi-panel">
@@ -382,35 +373,30 @@ export default function MultiTetrisPage() {
               </div>
             )}
           </div>
-          <button
-            type="button"
-            onClick={handleLeaveGame}
-            className="multi-leave-button"
-          >
-            나가기 (방 목록)
-          </button>
         </div>
       </div>
 
-      {/* 승자 정보 및 계속하기 */}
-      {winner && (
-        <div className="multi-result-panel">
-          <h3>게임 종료</h3>
-          <p>
-            {winner.id === userId
-              ? "축하합니다! 당신이 우승했습니다."
-              : `${winner.name}님이 우승했습니다.`}
-          </p>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button type="button" onClick={handleContinue}>
-              계속하기 (대기실)
-            </button>
-            <button type="button" onClick={handleLeaveGame}>
-              나가기 (방 목록)
-            </button>
-          </div>
-        </div>
-      )}
+        {/* 승자 정보 모달 */}
+          {winner && (
+            <div className="multi-modal-backdrop">
+              <div className="multi-modal">
+                <h3>🎮 게임 종료</h3>
+                <p style={{ fontSize: "16px", marginBottom: "16px" }}>
+                  {winner.id === userId
+                    ? "🎉 축하합니다! 당신이 우승했습니다!"
+                    : `🏆 ${winner.name}님이 우승했습니다.`}
+                </p>
+                <div className="multi-modal-actions">
+                  <button type="button" onClick={handleContinue}>
+                    계속하기 (대기실)
+                  </button>
+                  <button type="button" onClick={handleLeaveGame}>
+                    나가기 (방 목록)
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
     </div>
   );
 }

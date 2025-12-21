@@ -14,12 +14,23 @@
   justify-content: center;
 }
 
-.multi-side-panel,
-.multi-opponent-panel {
+.multi-left-third {
+  flex: 0 0 33.3333%;
+  min-width: 320px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-width: 220px;
+}
+
+.multi-opponents-two-thirds {
+  flex: 1 1 66.6667%;
+  min-width: 360px;
+}
+
+.multi-my-top-panels {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
 }
 
 .multi-panel {
@@ -41,6 +52,16 @@
   display: block;
   background-color: #000;
   border: 1px solid #333;
+}
+
+.multi-hold-canvas {
+  width: 96px;
+  height: 96px;
+}
+
+.multi-next-canvas {
+  width: 96px;
+  height: 288px;
 }
 
 .multi-controls-list {
@@ -84,8 +105,8 @@
 }
 
 .multi-opponent-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px;
 }
 
@@ -104,4 +125,68 @@
 
 .multi-result-panel {
   margin-top: 24px;
+}
+
+.multi-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.0);
+  backdrop-filter: blur(1px); /*팝업 창 뒤 배경 블러*/
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.multi-modal {
+  width: min(420px, calc(100vw - 32px));
+  aspect-ratio: 1 / 1;
+  background: rgba(255, 255, 255, 0.1); /*이게 모달 자체 색 + 투명도*/
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 40px 32px;
+  color: #f5f5f5;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.multi-modal h3 {
+  margin: 0 0 20px 0;
+  font-size: 28px;
+}
+
+.multi-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.multi-modal-actions button {
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #f5f5f5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.multi-modal-actions button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.multi-main-layout.blurred {
+  filter: blur(0px); /*팝업 창 뒤 요소 블러*/
+  opacity: 0.05; /* 팝업 창 뒤 요소 투명도 */
+  pointer-events: none;
+  transition: all 0.3s ease;
 }
