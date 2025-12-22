@@ -305,11 +305,6 @@ export default function MultiTetrisPage() {
           </div>
 
           <div className="multi-panel">
-            <h3>Next</h3>
-            <canvas ref={nextCanvasRef} className="multi-next-canvas" />
-          </div>
-
-          <div className="multi-panel">
             <h3>조작법</h3>
             <ul className="multi-controls-list">
               <li>
@@ -356,6 +351,11 @@ export default function MultiTetrisPage() {
           </div>
         </div>
 
+          <div className="multi-panel">
+            <h3>Next</h3>
+            <canvas ref={nextCanvasRef} className="multi-next-canvas" />
+          </div>
+
         {/* 오른쪽: 상대 필드들 */}
         <div className="multi-opponent-panel">
           <div className="multi-panel">
@@ -375,6 +375,7 @@ export default function MultiTetrisPage() {
           </div>
         </div>
       </div>
+
 
         {/* 승자 정보 모달 */}
           {winner && (
