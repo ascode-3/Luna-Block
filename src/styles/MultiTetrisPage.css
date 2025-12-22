@@ -95,7 +95,6 @@
 
 .multi-game-info {
   display: flex;
-  gap: 1.5rem;
   justify-content: center;
   background-color: rgba(20, 30, 50, 0.85);
   border: 2px solid rgba(100, 150, 255, 0.4);

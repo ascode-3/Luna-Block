@@ -323,8 +323,6 @@ export default function MultiTetrisPage() {
         <div className="multi-center-panel">
           <div className="multi-game-info">
             <div>
-              <span>클리어 라인: </span>
-              <strong>{linesCleared}</strong>
             </div>
             <div>
               <span>시간: </span>
