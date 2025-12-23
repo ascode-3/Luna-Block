@@ -9,7 +9,7 @@ const defaultKeyBindings = {
   softDrop: "ArrowDown",
   hardDrop: "Space",
   rotate: "ArrowUp",
-  hold: "hiftLeft",
+  hold: "ShiftLeft",
 };
 
 export function AppProvider({ children }) {

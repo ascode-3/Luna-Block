@@ -161,12 +161,15 @@
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .multi-opponent-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 12px;
+  width: 100%;
 }
 
 .multi-opponent-item {
