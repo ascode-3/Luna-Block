@@ -63,7 +63,7 @@ export default function MultiTetrisPage() {
   // DAS: 키를 누르고 있는 동안 처음 이동하기까지의 지연 시간
   // ARR: 키를 누르고 있는 동안 연속 이동하는 간격
   useEffect(() => {
-    const DAS_MS = 150;
+    const DAS_MS = 120;
     const ARR_MS = 35;
 
     const clearRepeatForCode = (code) => {
@@ -141,10 +141,6 @@ export default function MultiTetrisPage() {
       } else if (code === keyBindings.hold) {
         if (!repeat) {
           hold();
-        }
-      } else if (code === "KeyP" || code === "Escape") {
-        if (!repeat) {
-          togglePause();
         }
       }
     };
@@ -287,9 +283,12 @@ export default function MultiTetrisPage() {
     );
   }
 
+  const MAX_VISIBLE_OPPONENTS = 12;
+
   const aliveOpponents = otherPlayers.filter(
     (player) => !player.gameState?.isGameOver,
   );
+  const visibleOpponents = aliveOpponents.slice(0, MAX_VISIBLE_OPPONENTS);
 
   return (
     <div className="multi-tetris-page">
@@ -300,7 +299,7 @@ export default function MultiTetrisPage() {
         {/* 왼쪽: Hold / Next / Target / 조작법 */}
         <div className="multi-side-panel">
           <div className="multi-panel">
-            <h3>Hold</h3>
+            <h3 className="panel-title-centered">Hold</h3>
             <canvas ref={holdCanvasRef} className="multi-hold-canvas" />
           </div>
 
@@ -314,7 +313,6 @@ export default function MultiTetrisPage() {
               <li>소프트 드롭: {keyBindings.softDrop}</li>
               <li>하드 드롭: {keyBindings.hardDrop}</li>
               <li>홀드: {keyBindings.hold}</li>
-              <li>일시정지: P 또는 Esc</li>
             </ul>
           </div>
         </div>
@@ -350,19 +348,22 @@ export default function MultiTetrisPage() {
         </div>
 
           <div className="multi-panel">
-            <h3>Next</h3>
+            <h3 className="panel-title-centered">Next</h3>
             <canvas ref={nextCanvasRef} className="multi-next-canvas" />
           </div>
 
         {/* 오른쪽: 상대 필드들 */}
         <div className="multi-opponent-panel">
-          <div className="multi-panel">
-            <h3>상대 필드</h3>
+          <div className="multi-panel-re">
+            <h3 className="panel-title-centered">상대 필드</h3>
+            <div className="multi-panel-mini"> 
+
+
             {aliveOpponents.length === 0 ? (
               <p>다른 플레이어가 없습니다.</p>
             ) : (
               <div className="multi-opponent-grid">
-                {aliveOpponents.map((player) => (
+                {visibleOpponents.map((player) => (
                   <div key={player.id} className="multi-opponent-item">
                     <div className="multi-opponent-name">{player.name}</div>
                     <MiniTetrisBoard gameState={player.gameState} />
@@ -370,6 +371,7 @@ export default function MultiTetrisPage() {
                 ))}
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>

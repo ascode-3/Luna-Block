@@ -35,9 +35,27 @@
   gap: 0.8rem;
 }
 
+.multi-panel-re {
+  background-color: rgba(58, 176, 255, 0.1);
+  border: 2px solid rgba(100, 150, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.6rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(2.5px);
+  color: #f5f5f5;
+}
+
+.multi-panel-mini {
+  background-color: rgba(58, 176, 255, 0.03);
+  border: 2px solid rgba(100, 150, 255, 0.05);
+  border-radius: 10px;
+  padding: 0.6rem;
+  color: #f5f5f5;
+}
+
 .multi-panel {
-  background-color: rgba(20, 30, 50, 0.85);
-  border: 2px solid rgba(100, 150, 255, 0.4);
+  background-color: rgba(58, 176, 255, 0.05);
+  border: 2px solid rgba(100, 150, 255, 0.1);
   border-radius: 10px;
   padding: 0.7rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -53,6 +71,13 @@
   font-weight: 600;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   letter-spacing: 0.5px;
+}
+
+.panel-title-centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .multi-hold-canvas,
@@ -96,8 +121,8 @@
 .multi-game-info {
   display: flex;
   justify-content: center;
-  background-color: rgba(20, 30, 50, 0.85);
-  border: 2px solid rgba(100, 150, 255, 0.4);
+  background-color: rgba(58, 176, 255, 0.05);
+  border: 2px solid rgba(100, 150, 255, 0.1);
   padding: 0.7rem 1.2rem;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -167,13 +192,17 @@
 
 .multi-opponent-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
   gap: 12px;
   width: 100%;
 }
 
 .multi-opponent-item {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.35rem;
   font-size: 12px;
 }
 
