@@ -34,6 +34,7 @@ export default function MultiTetrisPage() {
     holdCanvasRef,
     nextCanvasRef,
     startGame,
+    restartGame,
     togglePause,
     moveLeft,
     moveRight,
@@ -128,7 +129,7 @@ export default function MultiTetrisPage() {
         if (!repeat) startDAS(code, moveLeft);
       } else if (code === keyBindings.moveRight) {
         if (!repeat) startDAS(code, moveRight);
-      } else if (code=== keyBindings.softDrop) {
+      } else if (code === keyBindings.softDrop) {
         if (!repeat) startDAS(code, softDrop);
       } else if (code === keyBindings.hardDrop) {
         if (!repeat) {
@@ -271,6 +272,47 @@ export default function MultiTetrisPage() {
     setRoomInfo(null);
     setPage("roomList");
   }, [socket, roomId, userId, setRoomId, setRoomInfo, setPage]);
+
+  // 게임 재시작 / 강제 시작 시 결과 모달 닫고 상태 초기화
+  useEffect(() => {
+    if (!socket || !roomId) return;
+
+    const handleGameStartOrRestart = () => {
+      setWinner(null);
+      setOtherPlayers([]);
+      setTargetPlayer(null);
+      restartGame();
+    };
+
+    socket.on("gameStart", handleGameStartOrRestart);
+    socket.on("gameRestart", handleGameStartOrRestart);
+
+    return () => {
+      socket.off("gameStart", handleGameStartOrRestart);
+      socket.off("gameRestart", handleGameStartOrRestart);
+    };
+  }, [socket, roomId, restartGame]);
+
+  // 플레이어 퇴장 정보를 모달 화면에서도 반영하여 방 정보가 stale 되지 않도록 처리
+  useEffect(() => {
+    if (!socket || !roomId) return;
+
+    const handlePlayerLeft = ({ roomId: eventRoomId, userId: leftId, players }) => {
+      if (eventRoomId && eventRoomId !== roomId) return;
+      setOtherPlayers((prev) => prev.filter((p) => p.id !== leftId));
+      if (players) {
+        setRoomInfo((prev) =>
+          prev ? { ...prev, players } : { id: roomId, players },
+        );
+      }
+    };
+
+    socket.on("playerLeft", handlePlayerLeft);
+
+    return () => {
+      socket.off("playerLeft", handlePlayerLeft);
+    };
+  }, [socket, roomId, setRoomInfo]);
 
   if (!roomId) {
     return (
