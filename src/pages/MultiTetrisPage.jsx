@@ -439,7 +439,7 @@ return (
           {winner && (
             <div className="multi-modal-backdrop">
               <div className="multi-modal">
-                <h3>🎮 게임 종료</h3>
+                <h3>게임 종료</h3>
                 <p style={{ fontSize: "16px", marginBottom: "16px" }}>
                   {winner.id === userId
                     ? "🎉 축하합니다! 당신이 우승했습니다!"
