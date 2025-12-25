@@ -48,6 +48,7 @@ export default function MultiTetrisPage() {
   const [otherPlayers, setOtherPlayers] = useState([]);
   const [targetPlayer, setTargetPlayer] = useState(null);
   const [winner, setWinner] = useState(null);
+  const [ranking, setRanking] = useState([]);
 
   useEffect(() => {
     if (!socket || !roomId) return;
@@ -220,8 +221,22 @@ export default function MultiTetrisPage() {
       setOtherPlayers((prev) => prev.filter((p) => p.id !== playerId));
     };
 
-    const handleGameWin = ({ winner: winnerInfo }) => {
+    const handleGameWin = ({ winner: winnerInfo, ranking: rankingInfo, players }) => {
       setWinner(winnerInfo || null);
+      if (Array.isArray(rankingInfo) && rankingInfo.length > 0) {
+        setRanking(rankingInfo);
+      } else if (Array.isArray(players)) {
+        const fallback = players
+          .map((p) => ({
+            id: p.userId || p.id,
+            name: p.name || p.nickname || "플레이어",
+            linesCleared: 0,
+          }))
+          .slice(0, 5);
+        setRanking(fallback);
+      } else {
+        setRanking([]);
+      }
     };
 
     const handleTargetAssigned = ({ targetId, targetName }) => {
@@ -273,121 +288,122 @@ export default function MultiTetrisPage() {
     setPage("roomList");
   }, [socket, roomId, userId, setRoomId, setRoomInfo, setPage]);
 
-  // 게임 재시작 / 강제 시작 시 결과 모달 닫고 상태 초기화
-  useEffect(() => {
-    if (!socket || !roomId) return;
+// 게임 재시작 / 강제 시작 시 결과 모달 닫고 상태 초기화
+useEffect(() => {
+  if (!socket || !roomId) return;
 
-    const handleGameStartOrRestart = () => {
-      setWinner(null);
-      setOtherPlayers([]);
-      setTargetPlayer(null);
-      restartGame();
-    };
+  const handleGameStartOrRestart = () => {
+    setWinner(null);
+    setRanking([]);
+    setOtherPlayers([]);
+    setTargetPlayer(null);
+    restartGame();
+  };
 
-    socket.on("gameStart", handleGameStartOrRestart);
-    socket.on("gameRestart", handleGameStartOrRestart);
+  socket.on("gameStart", handleGameStartOrRestart);
+  socket.on("gameRestart", handleGameStartOrRestart);
 
-    return () => {
-      socket.off("gameStart", handleGameStartOrRestart);
-      socket.off("gameRestart", handleGameStartOrRestart);
-    };
-  }, [socket, roomId, restartGame]);
+  return () => {
+    socket.off("gameStart", handleGameStartOrRestart);
+    socket.off("gameRestart", handleGameStartOrRestart);
+  };
+}, [socket, roomId, restartGame]);
 
-  // 플레이어 퇴장 정보를 모달 화면에서도 반영하여 방 정보가 stale 되지 않도록 처리
-  useEffect(() => {
-    if (!socket || !roomId) return;
+// 플레이어 퇴장 정보를 모달 화면에서도 반영하여 방 정보가 stale 되지 않도록 처리
+useEffect(() => {
+  if (!socket || !roomId) return;
 
-    const handlePlayerLeft = ({ roomId: eventRoomId, userId: leftId, players }) => {
-      if (eventRoomId && eventRoomId !== roomId) return;
-      setOtherPlayers((prev) => prev.filter((p) => p.id !== leftId));
-      if (players) {
-        setRoomInfo((prev) =>
-          prev ? { ...prev, players } : { id: roomId, players },
-        );
-      }
-    };
+  const handlePlayerLeft = ({ roomId: eventRoomId, userId: leftId, players }) => {
+    if (eventRoomId && eventRoomId !== roomId) return;
+    setOtherPlayers((prev) => prev.filter((p) => p.id !== leftId));
+    if (players) {
+      setRoomInfo((prev) =>
+        prev ? { ...prev, players } : { id: roomId, players },
+      );
+    }
+  };
 
-    socket.on("playerLeft", handlePlayerLeft);
+  socket.on("playerLeft", handlePlayerLeft);
 
-    return () => {
-      socket.off("playerLeft", handlePlayerLeft);
-    };
-  }, [socket, roomId, setRoomInfo]);
+  return () => {
+    socket.off("playerLeft", handlePlayerLeft);
+  };
+}, [socket, roomId, setRoomInfo]);
 
-  if (!roomId) {
-    return (
-      <div>
-        <p>방 정보가 없습니다.</p>
-        <button type="button" onClick={() => setPage("roomList")}>
-          방 목록으로 돌아가기
-        </button>
-      </div>
-    );
-  }
-
-  const MAX_VISIBLE_OPPONENTS = 12;
-
-  const aliveOpponents = otherPlayers.filter(
-    (player) => !player.gameState?.isGameOver,
-  );
-  const visibleOpponents = aliveOpponents.slice(0, MAX_VISIBLE_OPPONENTS);
-
+if (!roomId) {
   return (
-    <div className="multi-tetris-page">
-      <div className="multi-header">
+    <div>
+      <p>방 정보가 없습니다.</p>
+      <button type="button" onClick={() => setPage("roomList")}>
+        방 목록으로 돌아가기
+      </button>
+    </div>
+  );
+}
+
+const MAX_VISIBLE_OPPONENTS = 12;
+
+const aliveOpponents = otherPlayers.filter(
+  (player) => !player.gameState?.isGameOver,
+);
+const visibleOpponents = aliveOpponents.slice(0, MAX_VISIBLE_OPPONENTS);
+
+return (
+  <div className="multi-tetris-page">
+    <div className="multi-header">
+    </div>
+
+    <div className={`multi-main-layout ${winner ? 'blurred' : ''}`}>
+      {/* 왼쪽: Hold / Next / Target / 조작법 */}
+      <div className="multi-side-panel">
+        <div className="multi-panel">
+          <h3 className="panel-title-centered">Hold</h3>
+          <canvas ref={holdCanvasRef} className="multi-hold-canvas" />
+        </div>
+
+        <div className="multi-panel">
+          <h3>조작법</h3>
+          <ul className="multi-controls-list">
+            <li>
+              좌우 이동: {keyBindings.moveLeft} / {keyBindings.moveRight}
+            </li>
+            <li>회전: {keyBindings.rotate}</li>
+            <li>소프트 드롭: {keyBindings.softDrop}</li>
+            <li>하드 드롭: {keyBindings.hardDrop}</li>
+            <li>홀드: {keyBindings.hold}</li>
+          </ul>
+        </div>
       </div>
 
-      <div className={`multi-main-layout ${winner ? 'blurred' : ''}`}>
-        {/* 왼쪽: Hold / Next / Target / 조작법 */}
-        <div className="multi-side-panel">
-          <div className="multi-panel">
-            <h3 className="panel-title-centered">Hold</h3>
-            <canvas ref={holdCanvasRef} className="multi-hold-canvas" />
+      {/* 중앙: 내 필드 */}
+      <div className="multi-center-panel">
+        <div className="multi-game-info">
+          <div>
           </div>
-
-          <div className="multi-panel">
-            <h3>조작법</h3>
-            <ul className="multi-controls-list">
-              <li>
-                좌우 이동: {keyBindings.moveLeft} / {keyBindings.moveRight}
-              </li>
-              <li>회전: {keyBindings.rotate}</li>
-              <li>소프트 드롭: {keyBindings.softDrop}</li>
-              <li>하드 드롭: {keyBindings.hardDrop}</li>
-              <li>홀드: {keyBindings.hold}</li>
-            </ul>
+          <div>
+            <span>시간: </span>
+            <strong>{formatTime(elapsedTime)}</strong>
           </div>
         </div>
 
-        {/* 중앙: 내 필드 */}
-        <div className="multi-center-panel">
-          <div className="multi-game-info">
-            <div>
+        <div className="multi-game-area">
+          <canvas ref={gameBoardRef} className="multi-game-canvas" />
+
+          {gameOver && (
+            <div className="multi-overlay">
+              <h3>게임 오버</h3>
+              <p>결과는 잠시 후 갱신됩니다.</p>
             </div>
-            <div>
-              <span>시간: </span>
-              <strong>{formatTime(elapsedTime)}</strong>
+          )}
+
+          {isPaused && !gameOver && isGameStarted && (
+            <div className="multi-overlay">
+              <h3>일시정지</h3>
+              <p>P 또는 Esc 키로 계속하기</p>
             </div>
-          </div>
-
-          <div className="multi-game-area">
-            <canvas ref={gameBoardRef} className="multi-game-canvas" />
-
-            {gameOver && (
-              <div className="multi-overlay">
-                <h3>게임 오버</h3>
-                <p>결과는 잠시 후 갱신됩니다.</p>
-              </div>
-            )}
-
-            {isPaused && !gameOver && isGameStarted && (
-              <div className="multi-overlay">
-                <h3>일시정지</h3>
-                <p>P 또는 Esc 키로 계속하기</p>
-              </div>
-            )}
-          </div>
+          )}
         </div>
+      </div>
 
           <div className="multi-panel">
             <h3 className="panel-title-centered">Next</h3>
@@ -429,6 +445,22 @@ export default function MultiTetrisPage() {
                     ? "🎉 축하합니다! 당신이 우승했습니다!"
                     : `🏆 ${winner.name}님이 우승했습니다.`}
                 </p>
+                {ranking && ranking.length > 0 && (
+                  <div className="multi-ranking">
+                    <h4 style={{ marginBottom: "8px" }}>순위 (클리어 라인)</h4>
+                    <div className="multi-ranking-list">
+                      {ranking.map((entry, idx) => (
+                        <div key={entry.id} className="multi-ranking-row">
+                          <span className="rank-order">{idx + 1}위</span>
+                          <span className="rank-name">{entry.name}</span>
+                          <span className="rank-lines">
+                            클리어 라인: {entry.linesCleared ?? 0}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="multi-modal-actions">
                   <button type="button" onClick={handleContinue}>
                     계속하기 (대기실)

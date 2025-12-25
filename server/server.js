@@ -296,6 +296,9 @@ io.on('connection', (socket) => {
       room.gameStates.clear();
     }
 
+    // 생존 순위 계산용 카운터 초기화
+    room.eliminationCounter = 0;
+
     room.playersRestarted = new Set();
     room.movedToTetris = new Set();
     room.targetMap = null;
@@ -381,6 +384,16 @@ io.on('connection', (socket) => {
     const attackerId = socketUserMap.get(socket.id);
 
     if (!room || !attackerId) return;
+    if (!room.gameStates || !(room.gameStates instanceof Map)) {
+      room.gameStates = new Map();
+    }
+
+    // 랭킹용 누적 라인 수는 타겟 매핑 여부와 무관하게 집계
+    const attackerState = room.gameStates.get(attackerId) || {};
+    attackerState.linesClearedTotal = (attackerState.linesClearedTotal || 0) + linesCleared;
+    room.gameStates.set(attackerId, attackerState);
+
+    // 공격(쓰레기) 로직은 타겟이 있을 때만 진행
     if (!room.targetMap || !room.targetMap.has(attackerId)) return;
 
     let garbage = 0;
@@ -424,7 +437,9 @@ io.on('connection', (socket) => {
       room.gameStates = new Map();
     }
 
-    room.gameStates.set(userId, gameState);
+    const prevState = room.gameStates.get(userId) || {};
+    // 누적 정보(예: linesClearedTotal, survivalOrder)는 유지하고 최신 필드만 덮어씀
+    room.gameStates.set(userId, { ...prevState, ...gameState });
 
     // 다른 플레이어들에게 중계
     socket.to(roomId).emit('gameStateUpdate', {
@@ -455,6 +470,15 @@ io.on('connection', (socket) => {
     // 플레이어 상태에 게임 오버 표시
     const currentState = room.gameStates.get(userId) || {};
     currentState.isGameOver = true;
+    if (typeof score === 'number') {
+      currentState.linesClearedTotal = Math.max(currentState.linesClearedTotal || 0, score);
+    }
+
+    // 생존 순서 기록: 먼저 탈락한 순서대로 증가, 중복 기록 방지
+    if (typeof currentState.survivalOrder !== 'number') {
+      room.eliminationCounter = (room.eliminationCounter || 0) + 1;
+      currentState.survivalOrder = room.eliminationCounter;
+    }
     room.gameStates.set(userId, currentState);
 
     // 다른 플레이어들에게 게임 오버 알림
@@ -500,9 +524,40 @@ io.on('connection', (socket) => {
         room.targetInterval = null;
       }
 
+      // 우승자 생존 순서 기록 (마지막까지 살아남았으므로 최상위)
+      if (lastActivePlayer) {
+        const winnerState = room.gameStates.get(lastActivePlayer.id) || {};
+        if (typeof winnerState.survivalOrder !== 'number') {
+          // 마지막 생존자는 참가 인원 수 또는 현재 카운터+1로 최고 순위를 부여
+          const maxOrder = Math.max(room.eliminationCounter || 0, room.players.size - 1);
+          winnerState.survivalOrder = maxOrder + 1;
+        }
+        room.gameStates.set(lastActivePlayer.id, winnerState);
+      }
+
+      // 랭킹 계산 (생존 순서 내림차순, 동률 시 클리어 라인 내림차순, 상위 5명)
+      const ranking = Array.from(room.players.values())
+        .map((player) => {
+          const state = room.gameStates.get(player.userId) || {};
+          return {
+            id: player.userId,
+            name: player.name,
+            linesCleared: state.linesClearedTotal || 0,
+            survivalOrder: state.survivalOrder || 0,
+          };
+        })
+        .sort((a, b) => {
+          if ((b.survivalOrder || 0) !== (a.survivalOrder || 0)) {
+            return (b.survivalOrder || 0) - (a.survivalOrder || 0);
+          }
+          return (b.linesCleared || 0) - (a.linesCleared || 0);
+        })
+        .slice(0, 5);
+
       io.to(roomId).emit('gameWin', {
         winner: lastActivePlayer,
         players: Array.from(room.players.values()),
+        ranking,
       });
 
       room.playersRestarted = new Set();
@@ -552,9 +607,13 @@ io.on('connection', (socket) => {
       for (const [playerId, state] of room.gameStates.entries()) {
         if (state) {
           state.isGameOver = false;
+          state.linesClearedTotal = 0;
+          state.survivalOrder = 0;
           room.gameStates.set(playerId, state);
         }
       }
+
+      room.eliminationCounter = 0;
 
       room.playersRestarted.clear();
       if (room.movedToTetris && room.movedToTetris instanceof Set) {

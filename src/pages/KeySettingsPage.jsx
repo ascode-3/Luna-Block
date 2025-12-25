@@ -26,6 +26,7 @@ function formatKeyLabel(code) {
 export default function KeySettingsPage() {
   const { keyBindings, setKeyBindings, resetKeyBindings, setPage } = useAppContext();
   const [editingAction, setEditingAction] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
   
   // 퇴장 애니메이션 상태 관리
   const [isExiting, setIsExiting] = useState(false);
@@ -44,10 +45,20 @@ export default function KeySettingsPage() {
     const handleKeyDown = (event) => {
       event.preventDefault();
       const { code } = event;
+      const isDuplicate = Object.entries(keyBindings).some(
+        ([actionKey, boundCode]) => actionKey !== editingAction && boundCode === code,
+      );
+
+      if (isDuplicate) {
+        setErrorMessage("이미 다른 동작에 할당된 키입니다.");
+        return;
+      }
+
       setKeyBindings((prev) => ({
         ...prev,
         [editingAction]: code,
       }));
+      setErrorMessage("");
       setEditingAction(null);
     };
 
@@ -55,7 +66,7 @@ export default function KeySettingsPage() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [editingAction, setKeyBindings]);
+  }, [editingAction, keyBindings, setKeyBindings]);
 
   return (
     <div className="lobby-background">
@@ -72,6 +83,7 @@ export default function KeySettingsPage() {
       >
         <h2 className="lobby-title">Controls</h2>
         <p className="settings-desc">변경할 항목을 클릭하고 키를 입력하세요</p>
+        {errorMessage && <p className="error-text">{errorMessage}</p>}
 
         <div className="table-wrapper">
           <table className="glass-table">
@@ -82,38 +94,40 @@ export default function KeySettingsPage() {
                 <th style={{ width: "100px" }}>설정</th>
               </tr>
             </thead>
-                <tbody>
-      {actions.map((action) => {
-        const actionId = action.key;          // 액션 식별자
-        const isEditing = editingAction === actionId;
-        const boundCode = keyBindings[actionId]; // 실제 키보드 code
+            <tbody>
+              {actions.map((action) => {
+                const actionId = action.key;          // 액션 식별자
+                const isEditing = editingAction === actionId;
+                const boundCode = keyBindings[actionId]; // 실제 키보드 code
 
-        return (
-          <tr
-            key={actionId}
-            className={isEditing ? "editing-row" : ""}
-          >
-            <td>{action.label}</td>
+                return (
+                  <tr
+                    key={actionId}
+                    className={isEditing ? "editing-row" : ""}
+                  >
+                    <td>{action.label}</td>
 
-            <td className="key-value">
-              <span className="key-badge">
-                {formatKeyLabel(boundCode)}
-              </span>
-            </td>
+                    <td className="key-value">
+                      <span className="key-badge">
+                        {formatKeyLabel(boundCode)}
+                      </span>
+                    </td>
 
-            <td>
-              <button
-                className={`small-glass-button ${isEditing ? "active" : ""}`}
-                onClick={() => setEditingAction(actionId)}
-              >
-                {isEditing ? "입력..." : "변경"}
-              </button>
-            </td>
-          </tr>
-        );
-      })}
-    </tbody>
-
+                    <td>
+                      <button
+                        className={`small-glass-button ${isEditing ? "active" : ""}`}
+                        onClick={() => {
+                          setErrorMessage("");
+                          setEditingAction(actionId);
+                        }}
+                      >
+                        {isEditing ? "입력..." : "변경"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </table>
         </div>
 
